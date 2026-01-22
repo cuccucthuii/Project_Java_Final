@@ -1,12 +1,15 @@
 package presentation;
 
 import business.AdminBusiness;
+import business.StudentBusiness;
+import business.impl.StudentBusinessImpl;
 import entity.Admin;
 
 import java.util.Scanner;
 
 public class LoginPresentation {
     private static AdminBusiness adminBusiness = new AdminBusiness();
+    private static StudentBusiness studentBusiness = new StudentBusinessImpl();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -28,6 +31,7 @@ public class LoginPresentation {
                     loginAdmin(scanner);
                     break;
                 case 2:
+                    studentBusiness.studentLogin(scanner);
                     break;
                 case 3:
                     System.exit(0);

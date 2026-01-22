@@ -11,6 +11,8 @@ public class AdminPresentation {
 
     public void adminManagement(Scanner scanner) {
         CourcePresenation cp = new CourcePresenation();
+        ManagementStudentPresentation msp = new ManagementStudentPresentation();
+        RegisteredCourse rc = new RegisteredCourse();
         int choice = 0;
         do {
             System.out.println("=========== MENU ADMIN ===========");
@@ -31,8 +33,10 @@ public class AdminPresentation {
                     cp.CourseManagement(scanner);
                     break;
                 case 2:
+                    msp.ManagementStudentPresentation(scanner);
                     break;
                 case 3:
+                    rc.RegisterCourse(scanner);
                     break;
                 case 4:
                     break;

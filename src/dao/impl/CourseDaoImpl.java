@@ -1,5 +1,6 @@
-package dao;
+package dao.impl;
 
+import dao.CourseDAO;
 import entity.Course;
 import util.ConnectionDB;
 
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CourseDAO {
+public class CourseDaoImpl implements CourseDAO {
     public List<Course> findAllCourses() {
         Connection conn = null;
         CallableStatement stmt = null;
@@ -79,7 +80,7 @@ public class CourseDAO {
         return false;
     }
 
-    public Course searchCourceById(int courseId) {
+    public Course searchCourseById(int courseId) {
         Connection conn = null;
         CallableStatement stmt = null;
         Course course = null;
@@ -184,4 +185,37 @@ public class CourseDAO {
         }
         return courses;
     }
+
+    // API COURSE FOR STUDENT
+    @Override
+    public List<Course> getCourseForStudent() {
+        Connection conn = null;
+        CallableStatement stmt = null;
+        List<Course> courses = null;
+        try{
+            conn = ConnectionDB.openConnection();
+            stmt = conn.prepareCall("{call func_get_course()}");
+            boolean hasData = stmt.execute();
+            if (hasData) {
+                courses = new ArrayList<>();
+                ResultSet rs = stmt.getResultSet();
+                while (rs.next()) {
+                    Course course = new Course();
+                    course.setCourseId(rs.getInt("course_id"));
+                    course.setCourseName(rs.getString("course_name"));
+                    course.setCourseDuration(rs.getInt("course_duration"));
+                    course.setCourseInstructor(rs.getString("course_instructor"));
+                    course.setCourseCreateAt(LocalDate.parse(rs.getString("course_create_at")));
+                    courses.add(course);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            ConnectionDB.closeConnection(conn, stmt);
+        }
+        return courses;
+    }
+
+
 }

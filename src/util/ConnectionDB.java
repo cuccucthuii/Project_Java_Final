@@ -29,4 +29,13 @@ public class ConnectionDB {
             }
         }
     }
+
+//    public static void main(String[] args) {
+//        ConnectionDB conn = new ConnectionDB();
+//        if (conn !== null) {
+//            System.out.println("Connected to the database");
+//        }else{
+//            System.out.println("Dont connect to the database");
+//        }
+//    }
 }

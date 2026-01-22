@@ -1,15 +1,12 @@
 package presentation;
 
-import business.CourseBusiness;
-import entity.Course;
+import business.impl.CourseBusinessImpl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class CourcePresenation {
     private static CourcePresenation cp = new CourcePresenation();
-    private CourseBusiness cb = new CourseBusiness();
+    private CourseBusinessImpl cb = new CourseBusinessImpl();
 //    public static void main(String[] args) {
 //        Scanner scanner = new Scanner(System.in);
 //
