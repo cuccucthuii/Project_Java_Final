@@ -150,7 +150,15 @@ public class CourseBusinessImpl implements CourseBusiness {
         CourseFormater.printRow(course);
         CourseFormater.onlyPrintFooter();
 
+        boolean already = courseDAO.getCourseAlreadySub(course);
+        if (already) {
+            System.err.println("Khoá học đã được học không thể xoá!");
+            System.err.flush();
+            return;
+        }
+
         System.out.print("⚠ Xác nhận xoá khoá học này? (Y/N): ");
+
         do {
             String confirm = scanner.nextLine().trim();
 

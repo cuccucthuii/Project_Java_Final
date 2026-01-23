@@ -73,7 +73,7 @@ VALUES ('Java Core', 60, 'Mr. Nam'),
 -- Enrollment (5 records)
 -- =====================
 INSERT INTO Enrollment (student_id, course_id, status)
-VALUES (1, 16, 'WAITING'),
+VALUES (1, 2, 'WAITING'),
        (2, 2, 'CONFIRM'),
        (3, 3, 'DENIED'),
        (4, 1, 'CONFIRM'),
@@ -105,8 +105,8 @@ VALUES ('Advanced Java', 70, 'Mr. Tuan'),
 
 
 
-
-select * from Enrollment;
+select *
+from Enrollment;
 
 
 
@@ -274,13 +274,14 @@ create or replace function func_check_email_adrealy_exist(email_in varchar(100))
 as
 $$
 begin
-    return exists(
-        select 1 from Student where student_email = email_in
-    );
+    return exists(select 1
+                  from Student
+                  where student_email = email_in);
 end;
 $$;
 
-select * from func_check_email_adrealy_exist('a@gmail.ccom');
+select *
+from func_check_email_adrealy_exist('a@gmail.ccom');
 
 create or replace procedure proc_add_student(
     name_in varchar(100),
@@ -631,9 +632,6 @@ end;
 $$;
 
 
-call proc_cancel_course(1);
-select *
-from Enrollment;
 
 select *
 from Student;
@@ -644,23 +642,24 @@ from Student;
 CREATE OR REPLACE FUNCTION func_get_students_by_course(
     course_id_in INT
 )
-    RETURNS TABLE (
-                      enrollment_id INT,
-                      student_id INT,
-                      student_name VARCHAR,
-                      student_email VARCHAR,
-                      status enrollment_status
-                  )
+    RETURNS TABLE
+            (
+                enrollment_id INT,
+                student_id    INT,
+                student_name  VARCHAR,
+                student_email VARCHAR,
+                status        enrollment_status
+            )
     LANGUAGE plpgsql
-AS $$
+AS
+$$
 BEGIN
     RETURN QUERY
-        SELECT
-            e.enrollment_id,
-            s.student_id,
-            s.student_name,
-            s.student_email,
-            e.status
+        SELECT e.enrollment_id,
+               s.student_id,
+               s.student_name,
+               s.student_email,
+               e.status
         FROM Enrollment e
                  JOIN Student s ON e.student_id = s.student_id
         WHERE e.course_id = course_id_in
@@ -690,16 +689,15 @@ as
 $$
 begin
     return query
-        SELECT
-            e.enrollment_id,
-            e.student_id,
-            s.student_name,
-            c.course_name,
-            e.enrollment_registered_at,
-            e.status
+        SELECT e.enrollment_id,
+               e.student_id,
+               s.student_name,
+               c.course_name,
+               e.enrollment_registered_at,
+               e.status
         FROM enrollment e
                  JOIN student s ON e.student_id = s.student_id
-                 JOIN course  c ON e.course_id  = c.course_id
+                 JOIN course c ON e.course_id = c.course_id
         WHERE e.status = 'WAITING';
 end;
 $$;
@@ -861,5 +859,59 @@ $$;
 select *
 from statistic_course_more_ten_student();
 
+select *
+from Enrollment;
+
+-- Check khoá học không cho xoá nếu đã được đăng ký
+create or replace function func_check_course_alrealy_sub(id_course_in int)
+    returns boolean
+    language plpgsql
+as
+$$
+begin
+    return exists(select 1
+                  from Enrollment e
+                  where e.course_id = id_course_in);
+end;
+$$;
+
+select *
+from func_check_course_alrealy_sub(2);
+
+-- Check student đã đky khoá học chưa
+create or replace function func_check_student_already_sub(id_student_in int)
+    returns boolean
+    language plpgsql
+as
+$$
+begin
+    return exists(
+        select 1 from Enrollment e
+                 where e.student_id = id_student_in
+    );
+end;
+$$;
+
+select * from func_check_student_already_sub(2);
+
 select * from Enrollment;
 
+select * from Course;
+
+
+-- Check email đã tồn tại
+create or replace function func_check_email_exist_except_student(
+    email_in varchar(100),
+    student_id_in int
+)
+    returns boolean
+    language plpgsql
+as
+$$
+begin
+    return exists(select 1
+                  from Student
+                  where student_email = email_in
+                    and student_id != student_id_in);
+end;
+$$;

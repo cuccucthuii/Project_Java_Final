@@ -115,10 +115,8 @@ public class CourseDaoImpl implements CourseDAO {
             conn = ConnectionDB.openConnection();
             stmt = conn.prepareCall("call proc_delete_course(?)");
             stmt.setInt(1, courseId);
-            boolean hasData = stmt.execute();
-            if (hasData) {
-                return true;
-            }
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
         }catch (Exception e) {
             e.printStackTrace();
         }finally {
@@ -215,6 +213,29 @@ public class CourseDaoImpl implements CourseDAO {
             ConnectionDB.closeConnection(conn, stmt);
         }
         return courses;
+    }
+
+    @Override
+    public boolean getCourseAlreadySub(Course course) {
+        Connection conn = null;
+        CallableStatement stmt = null;
+        try{
+            conn = ConnectionDB.openConnection();
+            stmt = conn.prepareCall("{call func_check_course_alrealy_sub(?)}");
+            stmt.setInt(1, course.getCourseId());
+            boolean hasData = stmt.execute();
+            if (hasData) {
+                ResultSet rs = stmt.getResultSet();
+                if (rs.next()) {
+                    return rs.getBoolean(1);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            ConnectionDB.closeConnection(conn, stmt);
+        }
+        return false;
     }
 
 
