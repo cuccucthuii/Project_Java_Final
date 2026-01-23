@@ -46,11 +46,11 @@ public class Admin {
     }
 
     public void inputUserAdmin(Scanner scanner) {
-        System.out.println("Tên đăng nhập: ");
+        System.out.print("👤 Tên đăng nhập: ");
         do {
             String user = scanner.nextLine().trim();
             if (user.isEmpty()) {
-                System.err.println("Tên đăng nhập không được để trống!");
+                System.err.println("✗ Tên đăng nhập không được để trống!");
             } else {
                 this.adminUser = user;
                 break;
@@ -59,11 +59,11 @@ public class Admin {
     }
 
     public void inputPasswordAdmin(Scanner scanner) {
-        System.out.println("Mật khẩu: ");
+        System.out.print("🔑 Mật khẩu: ");
         do {
             String password = scanner.nextLine().trim();
             if (password.isEmpty()) {
-                System.err.println("Mật khẩu không được để trống!");
+                System.err.println("✗ Mật khẩu không được để trống!");
             } else {
                 this.adminPassword = password;
                 break;

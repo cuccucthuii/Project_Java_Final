@@ -73,11 +73,42 @@ VALUES ('Java Core', 60, 'Mr. Nam'),
 -- Enrollment (5 records)
 -- =====================
 INSERT INTO Enrollment (student_id, course_id, status)
-VALUES (1, 1, 'WAITING'),
+VALUES (1, 16, 'WAITING'),
        (2, 2, 'CONFIRM'),
        (3, 3, 'DENIED'),
        (4, 1, 'CONFIRM'),
        (5, 4, 'CANCER');
+
+-- ----------------------
+
+INSERT INTO Admin (admin_user, admin_password)
+VALUES ('admin06', 'password_hash_06'),
+       ('admin07', 'password_hash_07'),
+       ('admin08', 'password_hash_08'),
+       ('admin09', 'password_hash_09'),
+       ('admin10', 'password_hash_10');
+
+INSERT INTO Student (student_name, student_dob, student_email,
+                     student_sex, student_phone, student_password)
+VALUES ('Do Van F', '1998-11-20', 'f@gmail.com', true, '0906666666', 'passF'),
+       ('Nguyen Thi G', '2001-01-05', 'g@gmail.com', false, '0907777777', 'passG'),
+       ('Tran Van H', '1997-09-12', 'h@gmail.com', true, '0908888888', 'passH'),
+       ('Le Thi I', '2003-06-18', 'i@gmail.com', false, '0909999999', 'passI'),
+       ('Pham Van K', '1999-02-27', 'k@gmail.com', true, '0910000000', 'passK');
+
+INSERT INTO Course (course_name, course_duration, course_instructor)
+VALUES ('Advanced Java', 70, 'Mr. Tuan'),
+       ('Microservices', 50, 'Ms. Linh'),
+       ('Docker Basics', 20, 'Mr. Phuc'),
+       ('ReactJS', 35, 'Ms. Trang'),
+       ('Data Structures', 55, 'Mr. Huy');
+
+
+
+
+select * from Enrollment;
+
+
 
 -- API Login with Admin
 create or replace function log_in_with_admin_account(
@@ -237,6 +268,20 @@ select *
 from func_get_list_student();
 
 -- ADD STUDENT
+create or replace function func_check_email_adrealy_exist(email_in varchar(100))
+    returns boolean
+    language plpgsql
+as
+$$
+begin
+    return exists(
+        select 1 from Student where student_email = email_in
+    );
+end;
+$$;
+
+select * from func_check_email_adrealy_exist('a@gmail.ccom');
+
 create or replace procedure proc_add_student(
     name_in varchar(100),
     dob_in date,
@@ -599,28 +644,30 @@ from Student;
 CREATE OR REPLACE FUNCTION func_get_students_by_course(
     course_id_in INT
 )
-    RETURNS TABLE
-            (
-                student_id    INT,
-                student_name  VARCHAR,
-                student_email VARCHAR,
-                status        enrollment_status
-            )
+    RETURNS TABLE (
+                      enrollment_id INT,
+                      student_id INT,
+                      student_name VARCHAR,
+                      student_email VARCHAR,
+                      status enrollment_status
+                  )
     LANGUAGE plpgsql
-AS
-$$
+AS $$
 BEGIN
     RETURN QUERY
-        SELECT s.student_id,
-               s.student_name,
-               s.student_email,
-               e.status
+        SELECT
+            e.enrollment_id,
+            s.student_id,
+            s.student_name,
+            s.student_email,
+            e.status
         FROM Enrollment e
                  JOIN Student s ON e.student_id = s.student_id
         WHERE e.course_id = course_id_in
-        ORDER BY s.student_id;
+        ORDER BY e.enrollment_id;
 END;
 $$;
+
 select *
 from func_get_students_by_course(1);
 
@@ -633,7 +680,8 @@ create or replace function func_view_enrollment_waiting()
             (
                 enrollment_id            int,
                 student_id               int,
-                course_id                int,
+                student_name             varchar,
+                course_name              varchar,
                 enrollment_registered_at date,
                 status                   enrollment_status
             )
@@ -642,11 +690,22 @@ as
 $$
 begin
     return query
-    select * from Enrollment e where e.status = 'WAITING';
+        SELECT
+            e.enrollment_id,
+            e.student_id,
+            s.student_name,
+            c.course_name,
+            e.enrollment_registered_at,
+            e.status
+        FROM enrollment e
+                 JOIN student s ON e.student_id = s.student_id
+                 JOIN course  c ON e.course_id  = c.course_id
+        WHERE e.status = 'WAITING';
 end;
 $$;
 
-select * from func_view_enrollment_waiting();
+select *
+from func_view_enrollment_waiting();
 
 create or replace procedure proc_update_status_course(id_enrollment_in int, status_in varchar)
     language plpgsql
@@ -657,7 +716,8 @@ begin
 end;
 $$;
 
-select * from Enrollment;
+select *
+from Enrollment;
 
 create or replace procedure proc_delete_enrollment(
     enrollment_id_in int
@@ -666,7 +726,140 @@ create or replace procedure proc_delete_enrollment(
 as
 $$
 begin
-    delete from Enrollment
+    delete
+    from Enrollment
     where enrollment_id = enrollment_id_in;
 end;
 $$;
+
+-- STATISTICS
+-- Thống kê số lượng khoá học và tổng học viên
+select count(*)
+from Course;
+select count(*)
+from Student;
+
+select *
+from Student;
+
+create or replace function func_statistics_course_and_student()
+    returns table
+            (
+                total_course  bigint,
+                total_student bigint
+            )
+    language plpgsql
+as
+$$
+begin
+    return query
+        SELECT (SELECT count(*) from Course),
+               (select count(*) from Student);
+end;
+$$;
+
+
+select *
+from func_statistics_course_and_student();
+
+-- Thống kê tổng số học viên theo từng khoá
+select C.course_name, count(S.student_id) as tongSoHocVien
+from Enrollment e
+         join Course C on C.course_id = e.course_id
+         join Student S on S.student_id = e.student_id
+group by c.course_name;
+
+create or replace function func_statistics_student_by_course()
+    returns table
+            (
+                course_name   varchar(100),
+                total_student bigint
+            )
+    language plpgsql
+as
+$$
+begin
+    return query
+        select C.course_name, count(S.student_id)
+        from Enrollment e
+                 join Course C on C.course_id = e.course_id
+                 join Student S on S.student_id = e.student_id
+        group by c.course_name;
+end;
+$$;
+
+
+select *
+from func_statistics_student_by_course();
+
+-- Top 5 khoá học đông sih viên nhất
+select c.course_name, count(S.student_id) as tongSoHocVien
+from Enrollment e
+         join Course C on C.course_id = e.course_id
+         join Student S on S.student_id = e.student_id
+group by c.course_name
+order by count(S.student_id) DESC
+limit 5;
+
+create or replace function func_statistics_top_course()
+    returns table
+            (
+                course_name   varchar(100),
+                total_student bigint
+            )
+    language plpgsql
+as
+$$
+begin
+    return query
+        select c.course_name, count(S.student_id) as tongSoHocVien
+        from Enrollment e
+                 join Course C on C.course_id = e.course_id
+                 join Student S on S.student_id = e.student_id
+        group by c.course_name
+        order by count(S.student_id) DESC
+        limit 5;
+end;
+$$;
+
+select *
+from func_statistics_top_course();
+
+-- Thống kê khoá học có trên 10 sinh viên
+select c.course_name, count(S.student_id) as total_student
+from Enrollment e
+         join Course C on C.course_id = e.course_id
+         join Student S on S.student_id = e.student_id
+group by c.course_name
+having count(S.student_id) > 10
+order by count(S.student_id) DESC
+limit 5;
+
+
+create or replace function statistic_course_more_ten_student()
+    returns table
+            (
+                course_name   varchar(100),
+                total_student bigint
+            )
+    language plpgsql
+as
+$$
+begin
+    return query
+        select c.course_name, count(S.student_id) as total_student
+        from Enrollment e
+                 join Course C on C.course_id = e.course_id
+                 join Student S on S.student_id = e.student_id
+        group by c.course_name
+        having count(S.student_id) > 10
+        order by count(S.student_id) DESC
+        limit 5;
+end;
+$$;
+
+select *
+from statistic_course_more_ten_student();
+
+select * from Enrollment;
+

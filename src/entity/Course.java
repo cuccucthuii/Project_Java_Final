@@ -69,10 +69,9 @@ public class Course {
     }
 
     public void nameCourceData(Scanner scanner) {
-        System.out.println("Nhập vào tên khoá học: ");
+        System.out.print("Nhập vào tên khoá học: ");
         do {
-            try {
-                String nameCource = scanner.nextLine();
+                String nameCource = scanner.nextLine().trim();
                 if (nameCource.isEmpty()) {
                     System.err.println("Tên khoá học không được để trống!");
                 } else if (nameCource.length() > 100) {
@@ -81,34 +80,34 @@ public class Course {
                     this.courseName = nameCource;
                     break;
                 }
-            } catch (Exception e) {
-                System.err.println("Error: Name Cource!");
-            }
         } while (true);
     }
 
     public void durationCourceData(Scanner scanner) {
-        System.out.println("Nhập vào thời lượng: ");
+        System.out.print("Nhập vào thời lượng (giờ): ");
         do {
-            try {
-                String durationCource = scanner.nextLine();
+                String durationCource = scanner.nextLine().trim();
                 if (durationCource.isEmpty()) {
                     System.err.println("Thời lương không được để trống!");
-                } else {
-                    this.courseDuration = Integer.parseInt(durationCource);
+                }
+            try {
+                int checkInput = Integer.parseInt(durationCource);
+                if (checkInput < 0){
+                    System.err.println("Thời lượng phải > 0 Phút");
+                }else {
+                    this.courseDuration = checkInput;
                     break;
                 }
             }catch (Exception e) {
-                System.err.println("Error: Duration Cource!");
+                System.err.println("Thời lượng phải là số!");
             }
         }while (true);
     }
 
     public void instructorCourceData(Scanner scanner) {
-        System.out.println("Nhập vào giảng viên phụ trách: ");
+        System.out.print("Nhập vào giảng viên phụ trách: ");
         do {
-            try {
-                String instructorCource = scanner.nextLine();
+                String instructorCource = scanner.nextLine().trim();
                 if (instructorCource.isEmpty()) {
                     System.err.println("Tên giảng viên không được để trống!");
                 }else if (instructorCource.length() > 100) {
@@ -117,9 +116,6 @@ public class Course {
                     this.courseInstructor = instructorCource;
                     break;
                 }
-            }catch (Exception e) {
-                System.err.println("Error: Instructor Cource!");
-            }
         }while (true);
     }
 
